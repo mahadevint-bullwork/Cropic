@@ -1,0 +1,325 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #f4f7f2;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #222;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 25px 18px;
+}
+
+/* =======================
+   HEADER
+======================= */
+
+.header {
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.header h1 {
+  font-size: 34px;
+  color: #1f7a1f;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 16px;
+}
+
+/* =======================
+   MAIN SECTION
+======================= */
+
+.main-section {
+  display: flex;
+  gap: 22px;
+  align-items: stretch;
+  margin-bottom: 28px;
+}
+
+.left-panel {
+  flex: 1;
+}
+
+.right-panel {
+  flex: 1;
+
+  background: white;
+
+  border-radius: 20px;
+
+  padding: 24px;
+
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.right-panel h2 {
+  color: #1f7a1f;
+  margin-bottom: 12px;
+  font-size: 28px;
+}
+
+.small-text {
+  color: #666;
+  margin-bottom: 24px;
+  line-height: 1.5;
+  font-size: 15px;
+}
+
+/* =======================
+   IMAGE CARD
+======================= */
+
+.image-card {
+  width: 100%;
+  height: 320px;
+
+  background: white;
+
+  border-radius: 20px;
+
+  overflow: hidden;
+
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder {
+  text-align: center;
+  color: #888;
+}
+
+.placeholder h3 {
+  margin-bottom: 8px;
+  color: #1f7a1f;
+}
+
+/* =======================
+   UPLOAD BOX
+======================= */
+
+.upload-box {
+  border: 2px dashed #b7d7b7;
+
+  border-radius: 16px;
+
+  padding: 24px;
+
+  background: #f9fff9;
+
+  margin-bottom: 22px;
+}
+
+input[type="file"] {
+  width: 100%;
+  font-size: 15px;
+}
+
+/* =======================
+   BUTTON
+======================= */
+
+button {
+  background: linear-gradient(
+    135deg,
+    #1f9d3a,
+    #15752b
+  );
+
+  color: white;
+
+  border: none;
+
+  padding: 13px;
+
+  border-radius: 12px;
+
+  font-size: 16px;
+  font-weight: bold;
+
+  cursor: pointer;
+
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 0 6px 16px rgba(31,122,31,0.25);
+}
+
+/* =======================
+   LOADING
+======================= */
+
+.loading-text {
+  margin-top: 18px;
+  color: #1f7a1f;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+/* =======================
+   RESULT CARD
+======================= */
+
+.result-card {
+
+  background: white;
+
+  border-radius: 20px;
+
+  padding: 24px;
+
+  margin-bottom: 32px;
+
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+
+.result-card h2 {
+  color: #1f7a1f;
+  margin-bottom: 24px;
+  text-align: center;
+  font-size: 28px;
+}
+
+.result-grid {
+  display: grid;
+
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(160px, 1fr)
+  );
+
+  gap: 16px;
+}
+
+.result-item {
+  background: #f8fbf8;
+
+  border-radius: 16px;
+
+  padding: 16px;
+
+  border: 1px solid #e3efe3;
+
+  text-align: center;
+}
+
+.result-item span {
+  display: block;
+
+  color: #777;
+
+  margin-bottom: 8px;
+
+  font-size: 13px;
+}
+
+.result-item strong {
+  color: #1f7a1f;
+  font-size: 22px;
+}
+
+/* =======================
+   HISTORY
+======================= */
+
+.history-section h2 {
+  margin-bottom: 18px;
+  color: #1f7a1f;
+  font-size: 28px;
+}
+
+.history-container {
+  display: flex;
+
+  gap: 14px;
+
+  overflow-x: auto;
+
+  padding-bottom: 8px;
+}
+
+.history-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.history-container::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 20px;
+}
+
+.history-image {
+  width: 140px;
+  height: 140px;
+
+  border-radius: 16px;
+
+  object-fit: cover;
+
+  cursor: pointer;
+
+  transition: 0.3s;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.history-image:hover {
+  transform: scale(1.04);
+}
+
+/* =======================
+   MOBILE
+======================= */
+
+@media (max-width: 900px) {
+
+  .main-section {
+    flex-direction: column;
+  }
+
+  .image-card {
+    height: 260px;
+  }
+
+  .header h1 {
+    font-size: 28px;
+  }
+
+  .right-panel {
+    padding: 20px;
+  }
+
+  .history-image {
+    width: 110px;
+    height: 110px;
+  }
+
+  .result-item strong {
+    font-size: 18px;
+  }
+}

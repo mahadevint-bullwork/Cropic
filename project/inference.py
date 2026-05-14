@@ -1,29 +1,45 @@
 import sys
+import os
 import torch
 import torch.nn as nn
 from torchvision import models, transforms
 from PIL import Image
 
 # ======================
-# LABEL MAPS (IMPORTANT)
+# LABEL MAPS
 # ======================
 
-condition_map = ["Healthy", "Biotic", "Abiotic"]
+CONDITION_CLASSES = ["Healthy", "Biotic", "Abiotic", "Unknown"]
 
-cause_map = ["None", "leaf_blast", "brown_spot"]
+CAUSE_CLASSES = [
+    "None",
+    "bacterial_leaf_blight",
+    "bacterial_leaf_streak",
+    "leaf_blast",
+    "neck_blast",
+    "brown_spot",
+    "sheath_blight",
+    "sheath_rot",
+    "tungro",
+    "false_smut",
+    "insect_damage",
+    "Unknown"
+]
 
-severity_map = ["None", "Low", "Medium", "High"]
+SEVERITY_CLASSES = ["None", "Low", "Medium", "High", "Unknown"]
 
-stage_map = [
+STAGE_CLASSES = [
     "Germination",
     "Vegetative",
     "Flowering",
     "Fruiting",
-    "PhysiologicalMaturity"
+    "PhysiologicalMaturity",
+    "Unknown"
 ]
 
+CROP_TYPE_CLASSES = ["paddy", "chilli", "wheat", "rice", "tomato", "Unknown"]
 # ======================
-# MODEL (same as training)
+# MODEL
 # ======================
 
 class MultiHeadModel(nn.Module):
@@ -34,34 +50,41 @@ class MultiHeadModel(nn.Module):
         in_features = self.backbone.classifier[1].in_features
         self.backbone.classifier = nn.Identity()
 
-        self.condition_head = nn.Linear(in_features, 3)
-        self.cause_head = nn.Linear(in_features, 3)
-        self.severity_head = nn.Linear(in_features, 4)
-        self.stage_head = nn.Linear(in_features, 5)
+        self.condition_head  = nn.Linear(in_features, len(CONDITION_CLASSES))
+        self.cause_head      = nn.Linear(in_features, len(CAUSE_CLASSES))
+        self.severity_head   = nn.Linear(in_features, len(SEVERITY_CLASSES))
+        self.stage_head      = nn.Linear(in_features, len(STAGE_CLASSES))
+        self.crop_type_head  = nn.Linear(in_features, len(CROP_TYPE_CLASSES))
 
     def forward(self, x):
         feat = self.backbone(x)
-
         return {
-            "condition": self.condition_head(feat),
-            "cause": self.cause_head(feat),
-            "severity": self.severity_head(feat),
-            "stage": self.stage_head(feat)
+            "condition":  self.condition_head(feat),
+            "cause":      self.cause_head(feat),
+            "severity":   self.severity_head(feat),
+            "stage":      self.stage_head(feat),
+            "crop_type":  self.crop_type_head(feat)
         }
 
 # ======================
 # LOAD MODEL
 # ======================
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "training/outputs/best_model.pth")
+
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 model = MultiHeadModel()
 
-model.load_state_dict(
-    torch.load(
-        "../training/outputs/multihead_model.pth",
-        map_location="cpu"
-    )
-)
+if not os.path.exists(MODEL_PATH):
+    print("ERROR: Model not found. Train the model first.")
+    sys.exit(1)
 
+model.load_state_dict(
+    torch.load(MODEL_PATH, map_location=DEVICE)
+)
+model.to(DEVICE)
 model.eval()
 
 # ======================
@@ -69,11 +92,11 @@ model.eval()
 # ======================
 
 transform = transforms.Compose([
-    transforms.Resize((224,224)),
+    transforms.Resize((224, 224)),
     transforms.ToTensor(),
     transforms.Normalize(
-        [0.485,0.456,0.406],
-        [0.229,0.224,0.225]
+        [0.485, 0.456, 0.406],
+        [0.229, 0.224, 0.225]
     )
 ])
 
@@ -81,10 +104,18 @@ transform = transforms.Compose([
 # INPUT IMAGE
 # ======================
 
+if len(sys.argv) < 2:
+    print("ERROR: No image path provided")
+    sys.exit(1)
+
 image_path = sys.argv[1]
 
+if not os.path.exists(image_path):
+    print(f"ERROR: Image not found: {image_path}")
+    sys.exit(1)
+
 image = Image.open(image_path).convert("RGB")
-image = transform(image).unsqueeze(0)
+image = transform(image).unsqueeze(0).to(DEVICE)
 
 # ======================
 # PREDICT
@@ -93,18 +124,21 @@ image = transform(image).unsqueeze(0)
 with torch.no_grad():
     outputs = model(image)
 
-    cond = torch.argmax(outputs["condition"]).item()
-    cause = torch.argmax(outputs["cause"]).item()
-    sev = torch.argmax(outputs["severity"]).item()
-    stage = torch.argmax(outputs["stage"]).item()
+    cond      = torch.argmax(outputs["condition"]).item()
+    cause     = torch.argmax(outputs["cause"]).item()
+    sev       = torch.argmax(outputs["severity"]).item()
+    stage     = torch.argmax(outputs["stage"]).item()
+    crop_type = torch.argmax(outputs["crop_type"]).item()
 
 # ======================
 # PRINT OUTPUT
+# format: condition|cause|severity|stage|crop_type
 # ======================
 
 print(
-    f"{condition_map[cond]}|"
-    f"{cause_map[cause]}|"
-    f"{severity_map[sev]}|"
-    f"{stage_map[stage]}"
+    f"{CONDITION_CLASSES[cond]}|"
+    f"{CAUSE_CLASSES[cause]}|"
+    f"{SEVERITY_CLASSES[sev]}|"
+    f"{STAGE_CLASSES[stage]}|"
+    f"{CROP_TYPE_CLASSES[crop_type]}"
 )

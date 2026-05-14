@@ -20,7 +20,8 @@ export default function HomeScreen() {
   const [details, setDetails] = useState({
     cause: "",
     severity: "",
-    stage: ""
+    stage: "",
+    crop_type: ""
   });
 
   const [loading, setLoading] = useState(false);
@@ -28,7 +29,7 @@ export default function HomeScreen() {
   // 🆕 HISTORY STATE
   const [historyImages, setHistoryImages] = useState<string[]>([]);
 
-  const BASE_URL = "http://192.168.0.131:3000";
+  const BASE_URL = "http://192.168.0.129:3000";
 
   // ======================
   // 🆕 FETCH HISTORY
@@ -67,7 +68,8 @@ export default function HomeScreen() {
       setDetails({
         cause: "",
         severity: "",
-        stage: ""
+        stage: "",
+        crop_type: ""
       });
     }
   };
@@ -90,7 +92,8 @@ export default function HomeScreen() {
       setDetails({
         cause: "",
         severity: "",
-        stage: ""
+        stage: "",
+        crop_type: ""
       });
     }
   };
@@ -143,7 +146,8 @@ export default function HomeScreen() {
       setDetails({
         cause: predictData.cause,
         severity: predictData.severity,
-        stage: predictData.stage
+        stage: predictData.stage,
+        crop_type: predictData.crop_type
       });
 
       setConfidence(null); // no longer used
@@ -198,6 +202,7 @@ export default function HomeScreen() {
       {/* RESULT */}
       {prediction !== "" && !loading && (
         <View style={styles.resultCard}>
+          <Text>Crop Type: {details.crop_type}</Text>
           <Text>Condition: {prediction}</Text>
           <Text>Cause: {details.cause}</Text>
           <Text>Severity: {details.severity}</Text>

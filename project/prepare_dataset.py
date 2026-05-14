@@ -1,66 +1,85 @@
 import os
+import re
 import xml.etree.ElementTree as ET
-import shutil
-import random
+import json
 
-xml_path = "annotations.xml"
-images_dir = "images"
-output_dir = "dataset"
+# ======================
+# CONFIG
+# ======================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ANNOTATIONS_PATH = os.path.join(BASE_DIR, "annotations.xml")
+OUTPUT_PATH = os.path.join(BASE_DIR, "dataset.json")
 
-split_ratio = 0.8
+# ======================
+# PARSE XML (handle multiple task XMLs concatenated)
+# ======================
+print("📄 Parsing annotations.xml...")
 
-tree = ET.parse(xml_path)
-root = tree.getroot()
+with open(ANNOTATIONS_PATH, "r") as f:
+    content = f.read()
+
+# Wrap multiple XML docs into one root
+content = re.sub(r'<\?xml[^?]*\?>', '', content)
+content = re.sub(r'<annotations>', '', content)
+content = re.sub(r'</annotations>', '', content)
+content = f"<?xml version='1.0'?><annotations>{content}</annotations>"
+
+root = ET.fromstring(content)
 
 data = []
 
 for image in root.findall("image"):
     img_name = image.get("name")
 
-    box = image.find("box")
-    if box is None:
-        continue
+    for box in image.findall("box"):
+        if box.get("label") != "paddy":
+            continue
 
-    condition = None
-    cause = None
+        item = {
+            "image": img_name,
+            "crop_type": "paddy",
+            "condition": "Unknown",
+            "cause": "None",
+            "severity": "None",
+            "stage": "Unknown",
+            "confidence": "Certain"
+        }
 
-    for attr in box.findall("attribute"):
-        if attr.get("name") == "condition_type":
-            condition = attr.text
-        if attr.get("name") == "cause":
-            cause = attr.text
+        for attr in box.findall("attribute"):
+            name = attr.get("name")
+            value = attr.text
 
-    # 🔥 LABEL LOGIC
-    if condition == "Healthy":
-        label = "healthy"
-    elif condition == "Biotic":
-        label = cause
-    elif condition == "Abiotic":
-        label = cause
-    else:
-        continue
+            if name == "condition_type":
+                item["condition"] = value
+            elif name == "cause":
+                item["cause"] = value
+            elif name == "severity":
+                item["severity"] = value
+            elif name == "growth_stage":
+                item["stage"] = value
+            elif name == "annotator_confidence":
+                item["confidence"] = value
+            elif name == "crop_type":
+                item["crop_type"] = value
 
-    data.append((img_name, label))
+        data.append(item)
 
-# shuffle
-random.shuffle(data)
+# ======================
+# FILTER - only Certain annotations
+# ======================
+print(f"Total annotations: {len(data)}")
+data = [d for d in data if d["confidence"] == "Certain"]
+print(f"After filtering uncertain: {len(data)}")
 
-split_index = int(len(data) * split_ratio)
+# ======================
+# SAVE
+# ======================
+with open(OUTPUT_PATH, "w") as f:
+    json.dump(data, f, indent=4)
 
-train_data = data[:split_index]
-val_data = data[split_index:]
+print(f"\n✅ dataset.json created at {OUTPUT_PATH}")
+print(f"Total samples: {len(data)}")
 
-def copy_data(dataset, split_name):
-    for img_name, label in dataset:
-        dest = os.path.join(output_dir, split_name, label)
-        os.makedirs(dest, exist_ok=True)
-
-        src = os.path.join(images_dir, img_name)
-        dst = os.path.join(dest, img_name)
-
-        shutil.copy(src, dst)
-
-copy_data(train_data, "train")
-copy_data(val_data, "val")
-
-print("✅ Dataset created")
+if data:
+    print(f"\nSample entry:")
+    print(json.dumps(data[0], indent=4))

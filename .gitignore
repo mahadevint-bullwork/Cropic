@@ -1,35 +1,18 @@
-cat > ~/Desktop/cropic/.gitignore << 'EOF'
-# Dependencies
 node_modules/
 .expo/
-
-# Dataset and images
 project/dataset/
 project/images/
 project/uploads/
 project/logs/
 training/dataset/
-
-# Model weights
 training/outputs/
 *.pth
 *.pt
-
-# Logs
 *.log
-
-# Python cache
 __pycache__/
 *.pyc
-
-# VS Code
 .vscode/
-
-# Frontend files
+project/annotations.xml
+project/dataset.json
+.env
 package-lock.json
-package.json
-project/index.html
-project/server.js
-project/plant_disease_model.pth
-project/yolov8n.pt
-EOF

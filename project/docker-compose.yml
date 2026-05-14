@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+
+  backend:
+    build:
+      context: ../          # ← change to Cropic root
+      dockerfile: project/Dockerfile   # ← point to correct Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+        - ./uploads:/app/uploads
+        - ./logs:/app/logs
+        - ../training/outputs:/app/training/outputs
+        - ../.env:/app/.env
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
+    restart: always
